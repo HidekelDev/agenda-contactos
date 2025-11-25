@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Contactos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .contacts-list {
+            margin-top: 40px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 30px;
+        }
+
+        .contacts-list h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contact-card {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .contact-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .contact-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .delete-btn {
+            width: auto;
+            padding: 8px 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📇 Agenda de Contactos</h1>
+        
+        <form id="contactForm">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" required>
+            </div>
+
+            <div class="form-group">
+                <label for="notas">Notas:</label>
+                <textarea id="notas" name="notas"></textarea>
+            </div>
+
+            <button type="submit">Agregar Contacto</button>
+        </form>
+
+        <div class="contacts-list">
+            <h2>Mis Contactos</h2>
+            <div id="contactosContainer" class="empty-message">
+                No hay contactos aún. ¡Agrega uno!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar contactos del localStorage al iniciar
+        let contactos = JSON.parse(localStorage.getItem('contactos')) || [];
+
+        // Mostrar contactos al cargar la página
+        mostrarContactos();
+
+        // Manejar envío del formulario
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nuevoContacto = {
+                id: Date.now(),
+                nombre: document.getElementById('nombre').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value,
+                notas: document.getElementById('notas').value
+            };
+
+            contactos.push(nuevoContacto);
+            localStorage.setItem('contactos', JSON.stringify(contactos));
+            
+            this.reset();
+            mostrarContactos();
+        });
+
+        function mostrarContactos() {
+            const container = document.getElementById('contactosContainer');
+            
+            if (contactos.length === 0) {
+                container.innerHTML = '<p class="empty-message">No hay contactos aún. ¡Agrega uno!</p>';
+                return;
+            }
+
+            container.innerHTML = contactos.map(contacto => `
+                <div class="contact-card">
+                    <h3>${contacto.nombre}</h3>
+                    <div class="contact-info">📧 ${contacto.email}</div>
+                    <div class="contact-info">📱 ${contacto.telefono}</div>
+                    ${contacto.notas ? `<div class="contact-info">📝 ${contacto.notas}</div>` : ''}
+                    <button class="delete-btn" onclick="eliminarContacto(${contacto.id})">Eliminar</button>
+                </div>
+            `).join('');
+        }
+
+        function eliminarContacto(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este contacto?')) {
+                contactos = contactos.filter(c => c.id !== id);
+                localStorage.setItem('contactos', JSON.stringify(contactos));
+                mostrarContactos();
+            }
+        }
+    </script>
+</body>
+</html>
